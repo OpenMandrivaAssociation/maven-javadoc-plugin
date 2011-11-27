@@ -2,7 +2,7 @@
 
 Name:           maven-javadoc-plugin
 Version:        2.7
-Release:        4
+Release:        6
 Summary:        Maven Javadoc Plugin
 
 Group:          Development/Java
