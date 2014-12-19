@@ -1,104 +1,49 @@
 %{?_javapackages_macros:%_javapackages_macros}
-%global bootstrap 0
-
 Name:           maven-javadoc-plugin
-Version:        2.9.1
-Release:        2.1%{?dist}
+Version:        2.10.1
+Release:        3%{?dist}
 Summary:        Maven Javadoc Plugin
-
-
 License:        ASL 2.0
 URL:            http://maven.apache.org/plugins/maven-javadoc-plugin
+BuildArch:      noarch
+
 Source0:        http://repo1.maven.org/maven2/org/apache/maven/plugins/%{name}/%{version}/%{name}-%{version}-source-release.zip
 Patch0:         reduce-exceptions.patch
 
-BuildRequires:  java-devel >= 1:1.7.0
+BuildRequires:  maven-local
 BuildRequires:  apache-commons-io
 BuildRequires:  apache-commons-lang
 BuildRequires:  apache-commons-logging
 BuildRequires:  httpcomponents-client
 BuildRequires:  log4j
-BuildRequires:  maven-local
+BuildRequires:  maven
 BuildRequires:  maven-archiver
-BuildRequires:  maven-artifact
-BuildRequires:  maven-artifact-manager
-BuildRequires:  maven-clean-plugin
 BuildRequires:  maven-common-artifact-filters
-BuildRequires:  maven-compiler-plugin
 BuildRequires:  maven-doxia-sink-api
 BuildRequires:  maven-doxia-sitetools
-BuildRequires:  maven-enforcer-plugin
-BuildRequires:  maven-install-plugin
-BuildRequires:  maven-jar-plugin
-BuildRequires:  maven-model
+BuildRequires:  maven-invoker
 BuildRequires:  maven-plugin-annotations
 BuildRequires:  maven-plugin-plugin
-BuildRequires:  maven-plugin-testing-harness
-BuildRequires:  maven-project
-BuildRequires:  maven-resources-plugin
-BuildRequires:  maven-settings
+BuildRequires:  maven-plugins-pom
+BuildRequires:  maven-reporting-api
 BuildRequires:  maven-shade-plugin
-BuildRequires:  maven-shared-invoker
-BuildRequires:  maven-shared-reporting-api
-BuildRequires:  maven-surefire-plugin
-BuildRequires:  maven-toolchain
 BuildRequires:  maven-wagon
 BuildRequires:  modello
 BuildRequires:  plexus-archiver
 BuildRequires:  plexus-containers-container-default
-BuildRequires:  plexus-interactivity
+BuildRequires:  plexus-interactivity-api
 BuildRequires:  plexus-utils
 BuildRequires:  qdox
-%if ! %{bootstrap}
-BuildRequires:  maven-javadoc-plugin
-%endif        
-
-Requires:       java
-Requires:       apache-commons-io
-Requires:       apache-commons-lang
-Requires:       apache-commons-logging
-Requires:       httpcomponents-client
-Requires:       log4j
-Requires:       maven
-Requires:       maven-archiver
-Requires:       maven-artifact
-Requires:       maven-artifact-manager
-Requires:       maven-common-artifact-filters
-Requires:       maven-doxia-sink-api
-Requires:       maven-doxia-sitetools
-Requires:       maven-model
-Requires:       maven-plugin-annotations
-Requires:       maven-project
-Requires:       maven-settings
-Requires:       maven-shared-invoker
-Requires:       maven-shared-reporting-api
-Requires:       maven-toolchain
-Requires:       maven-wagon
-Requires:       plexus-archiver
-Requires:       plexus-containers-container-default
-Requires:       plexus-interactivity
-Requires:       plexus-utils
-Requires:       qdox
-
-BuildArch: noarch
-
-Obsoletes: maven2-plugin-javadoc <= 2.0.8
-Provides:  maven2-plugin-javadoc = %{version}-%{release}
 
 %description
 The Maven Javadoc Plugin is a plugin that uses the javadoc tool for
 generating javadocs for the specified project.
  
-%if ! %{bootstrap}
 %package javadoc
-
 Summary:        Javadoc for %{name}
-Requires:       %{name} = %{version}-%{release}
-Requires:       jpackage-utils
 
 %description javadoc
 API documentation for %{name}.
-%endif
 
 %prep
 %setup -q 
@@ -116,47 +61,69 @@ API documentation for %{name}.
     </exclusion>
 </exclusions>"
 
-sed -i -e "s|org.apache.maven.doxia.module.xhtml.decoration.render|org.apache.maven.doxia.sink.render|g" src/main/java/org/apache/maven/plugin/javadoc/JavadocReport.java
+# Don't use maven2 modules
+%pom_remove_dep :maven-project
+%pom_remove_dep :maven-artifact-manager
+%pom_remove_dep :maven-toolchain
+
+sed -i -e "s|org.apache.maven.doxia.module.xhtml.decoration.render|org.apache.maven.doxia.siterenderer|g" src/main/java/org/apache/maven/plugin/javadoc/JavadocReport.java
+
+# XXX remove javadoc:fix MOJO for now
+# TODO: port to QDox 2.0
+rm -f src/main/java/org/apache/maven/plugin/javadoc/*FixJavadocMojo.java
+%pom_remove_dep :qdox
 
 %build
-mvn-rpmbuild \
-        -Dmaven.test.skip=true \
-        install
-%if ! %{bootstrap}
-mvn-rpmbuild \
-        -Dmaven.test.skip=true \
-        -Dproject.build.sourceEncoding=UTF-8 \
-       javadoc:javadoc
-%endif        
+%mvn_build -f -- -DmavenVersion=3.1.1 -Dmaven.javadoc.skip=true
 
 %install
-# jars
-install -d -m 0755 %{buildroot}%{_javadir}
-install -m 644 target/%{name}-%{version}.jar   %{buildroot}%{_javadir}/%{name}.jar
-
-# poms
-install -d -m 755 %{buildroot}%{_mavenpomdir}
-install -pm 644 pom.xml %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
-
-%add_maven_depmap JPP-%{name}.pom %{name}.jar
-
-%if ! %{bootstrap}
-# javadoc
-install -d -m 0755 %{buildroot}%{_javadocdir}/%{name}
-cp -pr target/site/api*/* %{buildroot}%{_javadocdir}/%{name}/
-rm -rf target/site/api*
-%endif
+%mvn_install
 
 %files -f .mfiles
+%dir %{_javadir}/%{name}
 %doc LICENSE NOTICE 
 
-%if ! %{bootstrap}
 %files javadoc
 %doc LICENSE NOTICE 
-%{_javadocdir}/%{name}
-%endif
 
 %changelog
+* Wed Nov 12 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10.1-3
+- Remove dependency on qdox
+
+* Tue Oct 14 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10.1-2
+- Remove legacy Obsoletes/Provides for maven2 plugin
+
+* Mon Sep 29 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10.1-1
+- Update to upstream version 2.10.1
+
+* Tue Sep 16 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10-1
+- Update to upstream version 2.10
+
+* Fri Jul 18 2014 Roland Grunberg <rgrunber@redhat.com> - 2.9.1-10
+- Rebuild against maven-doxia-sitetools 1.6.
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.9.1-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Tue Mar 04 2014 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.9.1-8
+- Use Requires: java-headless rebuild (#1067528)
+
+* Fri Feb 21 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.9.1-7
+- Fix BR on plexus-interactivity
+
+* Thu Feb 20 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.9.1-6
+- Migrate to Wagon subpackages
+
+* Wed Feb 19 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.9.1-5
+- Fix unowned directory
+
+* Mon Jan 27 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.9.1-4
+- Remove dependency on maven2
+
+* Fri Jan 17 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.9.1-3
+- Update to current packaging guidelines
+- Update to Maven 3.x
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.9.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
@@ -225,3 +192,4 @@ rm -rf target/site/api*
 
 * Thu May  6 2010 Mary Ellen Foster <mefoster at gmail.com> - 2.4-1
 - Initial version, based on akurtakov's initial spec
+
