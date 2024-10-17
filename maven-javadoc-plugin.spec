@@ -4,7 +4,7 @@ Version:        2.10.1
 Release:        3%{?dist}
 Summary:        Maven Javadoc Plugin
 License:        ASL 2.0
-URL:            http://maven.apache.org/plugins/maven-javadoc-plugin
+URL:            https://maven.apache.org/plugins/maven-javadoc-plugin
 BuildArch:      noarch
 
 Source0:        http://repo1.maven.org/maven2/org/apache/maven/plugins/%{name}/%{version}/%{name}-%{version}-source-release.zip
