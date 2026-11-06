@@ -10,7 +10,8 @@ BuildArch:      noarch
 BuildRequires:	maven
 BuildRequires:	java-current-devel
 # Xpp3Dom still lives in plexus-utils 3. plexus-xml is the 4.x split.
-%global sysjar_drops --drop org.codehaus.plexus:plexus-xml
+# plexus-interactivity-api is a compile dependency the sources never import.
+%global sysjar_drops --drop org.codehaus.plexus:plexus-xml --drop org.codehaus.plexus:plexus-interactivity-api
 BuildSystem:	maven
 BuildOption:	-Dmaven.javadoc.skip=true
 
@@ -35,6 +36,7 @@ BuildRequires:	mvn(org.apache.maven.reporting:maven-reporting-api)
 BuildRequires:	mvn(org.apache.maven:maven-archiver)
 BuildRequires:	mvn(org.apache.maven.shared:maven-invoker)
 BuildRequires:	mvn(org.apache.maven.shared:maven-shared-utils)
+BuildRequires:	mvn(org.apache.maven.shared:maven-common-artifact-filters)
 BuildRequires:	mvn(org.apache.maven.doxia:doxia-sink-api)
 BuildRequires:	mvn(org.apache.maven.doxia:doxia-site-renderer)
 BuildRequires:	mvn(org.apache.maven.doxia:doxia-integration-tools)
