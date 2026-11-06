@@ -2,18 +2,53 @@ Name:           maven-javadoc-plugin
 Version:        3.12.0
 Release:        1
 Summary:        Maven Javadoc Plugin
+Group:          Development/Java
 License:        ASL 2.0
 URL:            https://maven.apache.org/plugins/maven-javadoc-plugin
 BuildArch:      noarch
 # Literal, so the first rpmbuild -bs records them before sysjar is installed.
 BuildRequires:	maven
 BuildRequires:	java-current-devel
+# Xpp3Dom still lives in plexus-utils 3. plexus-xml is the 4.x split.
+%global sysjar_drops --drop org.codehaus.plexus:plexus-xml
 BuildSystem:	maven
 BuildOption:	-Dmaven.javadoc.skip=true
 
 Source0:        https://github.com/apache/maven-javadoc-plugin/archive/refs/tags/maven-javadoc-plugin-%{version}.tar.gz
 
-BuildRequires:  maven-plugins-pom
+BuildRequires:	maven-plugins-pom
+BuildRequires:	mvn(org.apache.maven:maven-parent:pom::)
+BuildRequires:	mvn(org.apache.maven.shared:maven-shared-components:pom::)
+BuildRequires:	mvn(org.codehaus.plexus:plexus:pom::)
+BuildRequires:	mvn(org.apache.commons:commons-parent:pom::)
+BuildRequires:	mvn(org.apache.httpcomponents:httpcomponents-parent:pom::)
+BuildRequires:	mvn(org.apache.maven:maven-core)
+BuildRequires:	mvn(org.apache.maven:maven-model)
+BuildRequires:	mvn(org.apache.maven:maven-settings)
+BuildRequires:	mvn(org.apache.maven:maven-plugin-api)
+BuildRequires:	mvn(org.apache.maven:maven-artifact)
+BuildRequires:	mvn(org.apache.maven.plugin-tools:maven-plugin-annotations)
+BuildRequires:	mvn(org.apache.maven.resolver:maven-resolver-api)
+BuildRequires:	mvn(org.apache.maven.resolver:maven-resolver-util)
+BuildRequires:	mvn(javax.inject:javax.inject)
+BuildRequires:	mvn(org.apache.maven.reporting:maven-reporting-api)
+BuildRequires:	mvn(org.apache.maven:maven-archiver)
+BuildRequires:	mvn(org.apache.maven.shared:maven-invoker)
+BuildRequires:	mvn(org.apache.maven.shared:maven-shared-utils)
+BuildRequires:	mvn(org.apache.maven.doxia:doxia-sink-api)
+BuildRequires:	mvn(org.apache.maven.doxia:doxia-site-renderer)
+BuildRequires:	mvn(org.apache.maven.doxia:doxia-integration-tools)
+BuildRequires:	mvn(org.apache.maven.wagon:wagon-provider-api)
+BuildRequires:	mvn(org.apache.commons:commons-lang3)
+BuildRequires:	mvn(org.apache.commons:commons-text)
+BuildRequires:	mvn(org.apache.httpcomponents:httpclient)
+BuildRequires:	mvn(org.apache.httpcomponents:httpcore)
+BuildRequires:	mvn(org.slf4j:slf4j-api)
+BuildRequires:	mvn(org.codehaus.plexus:plexus-java)
+BuildRequires:	mvn(org.codehaus.plexus:plexus-utils)
+BuildRequires:	mvn(org.codehaus.plexus:plexus-io)
+BuildRequires:	mvn(org.codehaus.plexus:plexus-archiver)
+BuildRequires:	mvn(commons-io:commons-io)
 
 %description
 The Maven Javadoc Plugin is a plugin that uses the javadoc tool for
