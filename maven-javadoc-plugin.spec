@@ -11,7 +11,8 @@ BuildRequires:	maven
 BuildRequires:	java-current-devel
 # Xpp3Dom still lives in plexus-utils 3. plexus-xml is the 4.x split.
 # plexus-interactivity-api is a compile dependency the sources never import.
-%global sysjar_drops --drop org.codehaus.plexus:plexus-xml --drop org.codehaus.plexus:plexus-interactivity-api
+# reporting-impl is provided and unused. The mojos import the reporting API.
+%global sysjar_drops --drop org.codehaus.plexus:plexus-xml --drop org.codehaus.plexus:plexus-interactivity-api --drop org.apache.maven.reporting:maven-reporting-impl
 BuildSystem:	maven
 BuildOption:	-Dmaven.javadoc.skip=true
 
